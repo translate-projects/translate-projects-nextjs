@@ -1,0 +1,100 @@
+{
+  "name": "translate-projects-nextjs",
+  "version": "0.0.1",
+  "description": "Internationalize and manage your website easily",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "translate-projects-nextjs": "./cli.mjs"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./utils": "./dist/utils/index.js",
+    "./types": "./dist/types/index.js",
+    "./hooks": "./dist/hooks/index.js",
+    "./provider": "./dist/provider/index.js",
+    "./middleware": "./dist/middleware/index.js",
+    "./link": "./dist/links/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "utils": [
+        "./dist/utils/index.d.ts"
+      ],
+      "types": [
+        "./dist/types/index.d.ts"
+      ],
+      "hooks": [
+        "./dist/hooks/index.d.ts"
+      ],
+      "provider": [
+        "./dist/provider/index.d.ts"
+      ],
+      "middleware": [
+        "./dist/middleware/index.d.ts"
+      ],
+      "link": [
+        "./dist/links/index.d.ts"
+      ]
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "translate": "translate-projects-nextjs translate",
+    "build:react": "tsup",
+    "build": "npm run build:react",
+    "prebuild": "rm -rf dist",
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "lint:fix": "eslint --fix",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*.{js,ts,json,md}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "@types/i18next": "^13.0.0",
+    "@types/react": "^19.0.8",
+    "glob": "^11.0.1",
+    "i18next": "^24.2.2",
+    "next": "^15.1.7",
+    "react-i18next": "^13.5.0",
+    "translate-projects-core": "^0.0.8",
+    "tsup": "^8.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.5",
+    "eslint": "^9.20.1",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3"
+  },
+  "files": [
+    "dist/"
+  ],
+  "keywords": [
+    "translate projects",
+    "nextjs translate project",
+    "astro translate project",
+    "docusaurus translate project"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/translate-projects/translate-projects-nextjs.git"
+  },
+  "bugs": {
+    "url": "http://github.com/translate-projects/translate-projects-nextjs/issues"
+  },
+  "author": {
+    "name": "Neider Ruiz",
+    "email": "contact@neiderruiz.com",
+    "url": "http://github.com/neiderruiz/"
+  },
+  "license": "MIT"
+}
