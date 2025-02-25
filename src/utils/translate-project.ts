@@ -22,7 +22,7 @@ export const translateProject = async ({
   targetLangs,
   sourceLang,
   apiKey,
-  outputDir = './public/locales',
+  outputDir = './src/locales',
   scanner = false,
 }: TranslateProjectOptions) => {
   const folderLangBase = path.join(outputDir, sourceLang);
