@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-type LangMiddlewareOptions = {
+export type LangMiddlewareOptions = {
   request: any;
   defaultLocale: string;
   locales: string[];
