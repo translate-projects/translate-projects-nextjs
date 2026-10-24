@@ -2,7 +2,7 @@
 
 Translate your Next.js (App Router) app into multiple languages with [Translate Projects](https://translateprojects.dev) and use the translations at runtime with [i18next](https://www.i18next.com/).
 
-[See documentation](https://docs.translateprojects.dev/docs/frameworks-javascript/react/nextjs)
+[See documentation](https://doc.translateprojects.dev/docs/frameworks-javascript/nextjs)
 
 The package has two parts:
 
