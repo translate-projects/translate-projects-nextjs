@@ -9,7 +9,6 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./utils": "./dist/utils/index.js",
     "./types": "./dist/types/index.js",
     "./hooks": "./dist/hooks/index.js",
     "./provider": "./dist/provider/index.js",
@@ -18,9 +17,6 @@
   },
   "typesVersions": {
     "*": {
-      "utils": [
-        "./dist/utils/index.d.ts"
-      ],
       "types": [
         "./dist/types/index.d.ts"
       ],
@@ -47,7 +43,9 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "lint:fix": "eslint --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "npm run build && node test/translate-project.test.mjs",
+    "prepublishOnly": "npm test"
   },
   "lint-staged": {
     "**/*.{js,ts,json,md}": [
@@ -56,24 +54,24 @@
     ]
   },
   "dependencies": {
-    "@types/i18next": "^13.0.0",
-    "@types/react": "^19.0.8",
     "glob": "^11.0.1",
     "i18next": "^24.2.2",
-    "next": "^15.1.7",
     "react-i18next": "^13.5.0",
-    "translate-projects-core": "^0.0.8",
-    "tsup": "^8.3.6"
+    "translate-projects-core": "^0.0.11"
   },
   "devDependencies": {
     "@types/node": "^20.4.5",
+    "@types/react": "^19.0.8",
     "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.3",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
+    "next": "^15.1.7",
     "prettier": "^3.5.1",
-    "typescript": "^5.7.3"
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3",
+    "ws": "^8.18.0"
   },
   "files": [
     "dist/"
@@ -96,5 +94,9 @@
     "email": "contact@neiderruiz.com",
     "url": "http://github.com/neiderruiz/"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "peerDependencies": {
+    "next": ">=14",
+    "react": ">=18"
+  }
 }

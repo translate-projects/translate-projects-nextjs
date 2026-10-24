@@ -4,11 +4,12 @@
 
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 import { Logger } from 'translate-projects-core/utils';
 import { translateProject } from 'translate-projects-nextjs';
 
 /**
- * Loads the configuration file dynamically, supporting both ESM and CommonJS formats.
+ * Loads the configuration file (ES module with a default export).
  *
  * @param configPath - Path to the configuration file (e.g., 'translate.config.mjs')
  * @returns The parsed configuration object
@@ -23,16 +24,9 @@ async function loadConfig(configPath) {
   }
 
   try {
-    // Attempt to load the file as an ES Module first
-    let configModule;
-    try {
-      configModule = await import(configPath);
-    } catch (esmError) {
-      // Fallback to CommonJS if ESM loading fails
-      configModule = require(configPath); // Note: This will fail in .mjs without createRequire
-    }
+    // file URL so absolute paths also work on Windows
+    const configModule = await import(pathToFileURL(configPath).href);
 
-    // Extract config, supporting both ESM (export default) and CommonJS (module.exports)
     const config = configModule.default || configModule;
 
     // Validate that config is a non-null object
@@ -78,6 +72,7 @@ async function runCLI() {
       sourceLang: config.sourceLang,
       targetLangs: config.targetLangs,
       apiKey: config.apiKey,
+      outputDir: config.outputDir,
     });
 
     // Log success and exit with a success code

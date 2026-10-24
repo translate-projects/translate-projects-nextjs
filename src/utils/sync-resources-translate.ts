@@ -27,8 +27,10 @@ export const syncResourcesTranslate = async ({
     data: filesCache,
   });
 
-  if (!result.data) {
-    return {};
+  if (!result?.data) {
+    throw new Error(
+      'Could not validate files with Translate Projects. Check your apiKey.'
+    );
   }
 
   for (const fileHash of Object.keys(filesPath)) {
@@ -57,7 +59,7 @@ export const syncResourcesTranslate = async ({
       `🔄 Syncing (${Object.keys(jsonFlatten).length}) - ${item.path}... \n`
     );
 
-    await syncResources({
+    const synced = await syncResources({
       sourceLang,
       data: jsonFlatten,
       typeProject: 'next.js',
@@ -65,6 +67,11 @@ export const syncResourcesTranslate = async ({
       route_file: item.path,
       cache_hash: item.cache_hash,
     });
+
+    // syncResources returns null on failure; caching would skip the file next run
+    if (synced === null) {
+      throw new Error(`Could not sync ${item.path} with Translate Projects.`);
+    }
 
     await updateFileCache({
       fileHash: key,

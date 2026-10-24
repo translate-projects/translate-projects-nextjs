@@ -7,7 +7,7 @@ import { syncResourcesTranslate } from './sync-resources-translate';
 import { syncTranslationsLangs } from './sync-translations-langs';
 
 export type TranslateProjectOptions = {
-  outputDir: string;
+  outputDir?: string;
   sourceLang: TypeListLang;
   targetLangs: TypeListLang[];
   apiKey: string;
@@ -25,6 +25,12 @@ export const translateProject = async ({
   outputDir = './src/locales',
   scanner = false,
 }: TranslateProjectOptions) => {
+  if (!apiKey) {
+    throw new Error(
+      'Missing apiKey: set TRANSLATE_PROJECTS_API_KEY or pass apiKey in translate.config.mjs.'
+    );
+  }
+
   const folderLangBase = path.join(outputDir, sourceLang);
 
   if (!fs.existsSync(folderLangBase)) {
@@ -45,39 +51,34 @@ export const translateProject = async ({
     });
   }
 
-  try {
-    const { filesCache, filesPath } = await processDirectoryCache({
-      dir: folderLangBase,
-      allowedExtensions: ['.json'], // only process .json files
-    });
+  const { filesCache, filesPath } = await processDirectoryCache({
+    dir: folderLangBase,
+    allowedExtensions: ['.json'], // only process .json files
+  });
 
-    const totalTranslations = targetLangs?.length || 0;
+  await Logger.success(
+    `Total languages to translate: ${targetLangs?.length || 0}\n`
+  );
 
-    await Logger.success(
-      `Total languages to translate: ${totalTranslations}\n`
-    );
+  await syncResourcesTranslate({
+    apiKey,
+    filesCache,
+    filesPath,
+    sourceLang,
+  });
 
-    await syncResourcesTranslate({
-      apiKey,
-      filesCache,
-      filesPath,
-      sourceLang,
-    });
+  const failedLangs = await syncTranslationsLangs({
+    apiKey,
+    filesCache,
+    filesPath,
+    outputDir,
+    sourceLang,
+    targetLangs,
+  });
 
-    await syncTranslationsLangs({
-      apiKey,
-      filesCache,
-      filesPath,
-      outputDir,
-      sourceLang,
-      targetLangs,
-    });
-
-    process.exit(0);
-  } catch (error: any) {
-    await Logger.error(`\n🛑 **Error:** ${error.message}`);
-    await Logger.error(
-      '⏳ A timeout error has occurred. We are working to resolve it. Please try again later.\n'
+  if (failedLangs.length) {
+    throw new Error(
+      `Incomplete translations for: ${failedLangs.join(', ')}. Existing files were kept, run again to retry.`
     );
   }
 };
