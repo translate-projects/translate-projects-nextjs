@@ -171,6 +171,34 @@ test('second run with no changes makes no translation requests', async () => {
   );
 });
 
+test('deleting a generated file restores it from the cache, no requests', async () => {
+  await run();
+  fs.rmSync(file('src/locales/en/translation.json'));
+  api.calls = [];
+
+  await run();
+
+  assert.deepStrictEqual(api.calls, [
+    'POST /v1/translations/validate-changes-files',
+  ]);
+  assert.strictEqual(
+    readJson('src/locales/en/translation.json').home.title,
+    'en:Hola'
+  );
+});
+
+test('deleting the local cache forces a full sync and translation', async () => {
+  await run();
+  fs.rmSync(path.join(dir, '.config/translate-projects-core/cache.json'));
+  api.calls = [];
+
+  await run();
+
+  assert.ok(api.calls.includes('POST /v1/translations/load-sources'));
+  assert.ok(api.calls.includes('POST /v1/translations/ en'));
+  assert.ok(api.calls.includes('POST /v1/translations/ fr'));
+});
+
 test('a changed source file is synced and translated again', async () => {
   await run();
   writeJson('src/locales/es/translation.json', { ...SOURCE, extra: 'Nuevo' });
