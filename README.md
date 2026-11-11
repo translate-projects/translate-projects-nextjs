@@ -152,7 +152,13 @@ src/locales/<lang>/translation.json
 
 ### Middleware
 
-Redirects `/about` to `/<defaultLocale>/about` and stores the chosen locale in the `NEXT_LOCALE` cookie.
+A URL without a locale (`/about`) is redirected to `/<locale>/about`, keeping the query string. The locale is, in order:
+
+1. the one the user chose before (`NEXT_LOCALE` cookie, if it is in `locales`);
+2. the browser's language (`Accept-Language`), matched exactly or by base language: `en-US` → `en`, `pt` → `pt-BR`;
+3. `defaultLocale`.
+
+A URL with a locale (`/en/about`) is served as is and saves that locale in the `NEXT_LOCALE` cookie for 30 days, so a user who picked English comes back to English.
 
 ```ts
 // middleware.ts

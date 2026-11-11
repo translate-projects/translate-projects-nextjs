@@ -1,6 +1,6 @@
 {
   "name": "translate-projects-nextjs",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Internationalize and manage your website easily",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -44,7 +44,7 @@
     "format": "prettier --write .",
     "lint:fix": "eslint --fix",
     "prepare": "husky",
-    "test": "npm run build && node test/translate-project.test.mjs",
+    "test": "npm run build && node test/translate-project.test.mjs && node --test test/lang-middleware.test.mjs",
     "prepublishOnly": "npm test"
   },
   "lint-staged": {
