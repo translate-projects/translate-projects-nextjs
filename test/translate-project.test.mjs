@@ -33,6 +33,10 @@ const handle = async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const lang = url.searchParams.get('target_lang');
   const route = `${req.method} ${url.pathname}`;
+  // fingerprints of server corrections: checked on every run, kept out of api.calls
+  if (route === 'GET /v1/translations/versions') {
+    return json(res, 200, { status: 'SUCCESS', data: api.versions });
+  }
   api.calls.push(lang ? `${route} ${lang}` : route);
 
   const forced = api.fail(route, lang);
@@ -67,7 +71,10 @@ const handle = async (req, res) => {
       const data = Object.fromEntries(
         Object.entries(api.sources)
           .filter(([, text]) => !api.untranslated.includes(text))
-          .map(([key, text]) => [key, `${lang}:${text}`])
+          .map(([key, text]) => [
+            key,
+            api.corrected[`${lang}:${text}`] ?? `${lang}:${text}`,
+          ])
       );
       return json(res, 200, { status: 'SUCCESS', data });
     }
@@ -111,7 +118,15 @@ before(async () => {
 after(() => server.close());
 
 beforeEach(() => {
-  api = { calls: [], sources: {}, known: {}, untranslated: [], fail: () => 0 };
+  api = {
+    calls: [],
+    sources: {},
+    known: {},
+    untranslated: [],
+    fail: () => 0,
+    versions: {},
+    corrected: {},
+  };
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tp-nextjs-'));
   process.env.HOME = dir; // the core cache lives in ~/.config
   process.chdir(dir);
@@ -169,6 +184,31 @@ test('second run with no changes makes no translation requests', async () => {
     readJson('src/locales/en/translation.json').home.title,
     'en:Hola'
   );
+});
+
+test('a correction made on the server is downloaded without source changes', async () => {
+  api.versions = { en: 'e1', fr: 'f1' };
+  await run();
+  api.calls = [];
+
+  // someone corrects "Hola" in fr (dashboard or editTranslation)
+  api.corrected['fr:Hola'] = 'Salut';
+  api.versions = { en: 'e1', fr: 'f2' };
+  await run();
+
+  assert.deepStrictEqual(api.calls, [
+    'POST /v1/translations/validate-changes-files',
+    'POST /v1/translations/ fr',
+    'GET /v1/translations/language-project fr',
+  ]);
+  assert.strictEqual(readJson('src/locales/fr/translation.json').home.title, 'Salut');
+
+  // already downloaded: the next run asks for nothing
+  api.calls = [];
+  await run();
+  assert.deepStrictEqual(api.calls, [
+    'POST /v1/translations/validate-changes-files',
+  ]);
 });
 
 test('deleting a generated file restores it from the cache, no requests', async () => {

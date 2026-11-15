@@ -6,6 +6,8 @@ import {
   Logger,
   makeTranslations,
   readJsonFile,
+  saveServerVersions,
+  serverChangedLangs,
   updateFileCache,
 } from 'translate-projects-core/utils';
 import { assignValuesFlatten } from './assign-values-flatten';
@@ -38,6 +40,13 @@ export const syncTranslationsLangs = async ({
   for (const [key, item] of Object.entries(filesPath)) {
     const jsonData = flattenJson(readJsonFile(item.path));
     const jsonFlatten = await assignHashKeysJson(jsonData);
+    // corrected on the server (dashboard or editTranslation) since the last run
+    const corrected = await serverChangedLangs({
+      apiKey,
+      fileHash: key,
+      routeFile: item.path,
+    });
+    const fetched: TypeListLang[] = [];
 
     // the source folder is the input: rewriting it can only lose texts
     for (const locale of targetLangs.filter((l) => l !== sourceLang)) {
@@ -47,7 +56,12 @@ export const syncTranslationsLangs = async ({
         Object.keys(translations ?? {})
       );
 
-      if (!translations || !item.in_cache || !areEqual) {
+      if (
+        !translations ||
+        !item.in_cache ||
+        !areEqual ||
+        corrected.includes(locale)
+      ) {
         if (!Object.keys(jsonFlatten).length) continue;
 
         await Logger.info(`Syncing translations (${locale}) ... \n`);
@@ -69,6 +83,7 @@ export const syncTranslationsLangs = async ({
           fileHash: key,
           translations: { [locale]: translations },
         });
+        fetched.push(locale);
       }
 
       const folderLang = path.join(outputDir, locale);
@@ -111,6 +126,13 @@ export const syncTranslationsLangs = async ({
         `Translation completed: ${locale.toUpperCase()} 📄 -> 📁 \`${outputFilePath}\`\n`
       );
     }
+
+    await saveServerVersions({
+      apiKey,
+      fileHash: key,
+      routeFile: item.path,
+      langs: fetched.filter((l) => !failedLangs.has(l)),
+    });
   }
 
   return [...failedLangs];
